@@ -284,3 +284,14 @@ def test_pick_cause_prefers_explanation() -> None:
     ]
     assert pick_cause(alerts) == "Une opération de maintenance imprévue."
     assert len(pick_cause([alert("x" * 300)])) == 140
+
+
+def test_same_alert_on_many_trains_grouped(h: Harness) -> None:
+    alerts = [
+        ("w1", ["88712", "88501", "88804"], "Travaux : temps de parcours allongé de 5 min.", None, None)
+    ]
+    sent = h.cycle(at("06:40"), NORMAL, alerts)
+    assert len(sent) == 1
+    assert sent[0].message == (
+        "Info 07:18 (88712), 07:28 (88501), 07:36 (88804) : Travaux : temps de parcours allongé de 5 min."
+    )

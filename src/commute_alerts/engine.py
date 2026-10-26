@@ -323,7 +323,21 @@ def build_notification(
             tags.append("warning")
     else:
         title = f"🚆 {head}"
-        for _no, evs in sorted(by_train.items(), key=lambda kv: kv[1][0].state.planned_dep):
+        # Une même alerte « info » sur plusieurs trains (travaux, affluence…) : une seule ligne
+        info_groups: dict[str, list[TrainState]] = {}
+        ordered = sorted(by_train.values(), key=lambda e: e[0].state.planned_dep)
+        for evs in ordered:
+            main = _main_event(evs)
+            if main.kind is EventKind.ALERT:
+                info_groups.setdefault(pick_cause(main.alerts), []).append(main.state)
+        for evs in ordered:
+            main = _main_event(evs)
+            group = info_groups.get(pick_cause(main.alerts)) if main.kind is EventKind.ALERT else None
+            if group is not None and len(group) > 1:
+                if group[0] is main.state:
+                    trains = ", ".join(f"{hhmm(st.planned_dep)} ({st.train_no})" for st in group)
+                    lines.append(f"Info {trains} : {pick_cause(main.alerts)}")
+                continue
             lines.append(_train_paragraph(evs, candidates, now, origin_name, dest_name))
     return Notification(
         title=title, message="\n".join(lines), priority=prio, tags=tags, click=click, window=window.name
