@@ -143,6 +143,7 @@ class Service:
             store = Store(self.store.path)
             try:
                 path = static_gtfs.download(self.cfg, store)
+                store.set_meta("gtfs_checked_at", datetime.now(self.tz).isoformat())
                 zip_path = self.cfg.data_dir / "gtfs.zip"
                 if path is not None or force or (not store.gtfs_loaded() and zip_path.exists()):
                     static_gtfs.import_zip(zip_path, store, self.codes)
@@ -172,12 +173,16 @@ class Service:
     def gtfs_due(self, now: datetime) -> bool:
         if not self.store.gtfs_loaded():
             return True
-        imported = self.store.get_meta("gtfs_imported_at")
-        if not imported or now - datetime.fromisoformat(imported) > timedelta(hours=26):
+        # Dernière vérification réussie (import ou 304), pour ne pas re-télécharger à chaque cycle
+        last = self.store.get_meta("gtfs_checked_at") or self.store.get_meta("gtfs_imported_at")
+        if not last:
+            return True
+        checked = datetime.fromisoformat(last)
+        if now - checked > timedelta(hours=26):
             return True
         for t in self.cfg.feeds.static_refresh_times:
             due = datetime.combine(now.date(), t, tzinfo=self.tz)
-            if due <= now < due + timedelta(hours=2) and datetime.fromisoformat(imported) < due:
+            if due <= now < due + timedelta(hours=2) and checked < due:
                 return True
         return False
 

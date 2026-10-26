@@ -178,7 +178,8 @@ def best_alternative(impacted: TrainState, candidates: list[Candidate], now: dat
 
 
 def describe_candidate(c: Candidate) -> str:
-    label = f"{hhmm(c.planned.dep)} ({c.planned.train_no}{', car' if c.planned.mode is Mode.BUS else ''})"
+    kind = "car" if c.planned.mode is Mode.BUS else "TER"
+    label = f"{kind} {c.planned.train_no} (départ {hhmm(c.planned.dep)})"
     if c.realtime and c.obs:
         state = f"annoncé +{c.obs.delay_min}" if c.obs.delay_min else "à l'heure"
         return f"{label} {state} → arr. ~{hhmm(c.est_arr)}"
@@ -217,7 +218,7 @@ _PRIORITY = {
     EventKind.BUS: 4,
     EventKind.RECOVERED: 2,
     EventKind.ADDED: 2,
-    EventKind.ALERT: 3,
+    EventKind.ALERT: 2,  # simple texte d'info, sans retard ni suppression
 }
 _TAGS = {
     EventKind.CANCELED: "x",
@@ -239,8 +240,8 @@ def priority(ev: Event) -> int:
 
 
 def train_label(s: TrainState) -> str:
-    kind = "car" if s.mode is Mode.BUS and s.status is not Status.BUS_REPLACEMENT else "TER"
-    return f"{hhmm(s.planned_dep)} ({kind} {s.train_no})"
+    kind = "Car" if s.mode is Mode.BUS and s.status is not Status.BUS_REPLACEMENT else "TER"
+    return f"{kind} {s.train_no} (départ {hhmm(s.planned_dep)})"
 
 
 def _est_suffix(s: TrainState) -> str:
@@ -272,9 +273,9 @@ def event_text(ev: Event, origin: str, destination: str) -> str:
             return f"{train_label(s)} rétabli : {ev.detail}{extra}."
         case EventKind.ADDED:
             what = "Car" if s.mode is Mode.BUS else "Train"
-            return f"{what} ajouté : {hhmm(s.planned_dep)} ({s.train_no}){_est_suffix(s)}."
+            return f"{what} ajouté : {s.train_no} (départ {hhmm(s.planned_dep)}){_est_suffix(s)}."
         case EventKind.ALERT:
-            return f"{train_label(s)} info :"
+            return f"{train_label(s)} — info SNCF :"
     return ""
 
 
@@ -335,8 +336,8 @@ def build_notification(
             group = info_groups.get(pick_cause(main.alerts)) if main.kind is EventKind.ALERT else None
             if group is not None and len(group) > 1:
                 if group[0] is main.state:
-                    trains = ", ".join(f"{hhmm(st.planned_dep)} ({st.train_no})" for st in group)
-                    lines.append(f"Info {trains} : {pick_cause(main.alerts)}")
+                    trains = ", ".join(f"{st.train_no} ({hhmm(st.planned_dep)})" for st in group)
+                    lines.append(f"Info SNCF pour {trains} : {pick_cause(main.alerts)}")
                 continue
             lines.append(_train_paragraph(evs, candidates, now, origin_name, dest_name))
     return Notification(
@@ -363,7 +364,7 @@ def _main_event(evs: list[Event]) -> Event:
 
 def _short(ev: Event) -> str:
     s = ev.state
-    label = f"{hhmm(s.planned_dep)} {s.train_no}"
+    label = f"{s.train_no} ({hhmm(s.planned_dep)})"
     return {
         EventKind.CANCELED: f"{label} supprimé",
         EventKind.SKIPPED_ORIGIN: f"{label} supprimé au départ",
@@ -490,12 +491,12 @@ def evening_digest(
     for window, (o, d), plan, removed, alerts in sections:
         sub: list[str] = []
         for p in removed:
-            sub.append(f"• {hhmm(p.dep)} ({p.train_no}) absent du plan (supprimé à l'avance)")
+            sub.append(f"• TER {p.train_no} (départ {hhmm(p.dep)}) absent du plan (supprimé à l'avance)")
         by_no = {p.train_no: p for p in plan}
         for a in alerts:
             nos = sorted(n for n in a.train_nos if n in by_no)
             if nos and a.summary:
-                trains = ", ".join(f"{hhmm(by_no[n].dep)} ({n})" for n in nos[:4])
+                trains = ", ".join(f"TER {n} (départ {hhmm(by_no[n].dep)})" for n in nos[:4])
                 sub.append(f"• {trains} : {a.summary[:CAUSE_MAX]}")
         if sub:
             lines.append(f"{window.name} {o}→{d} ({len(plan)} trains prévus) :")

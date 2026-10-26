@@ -72,8 +72,8 @@ def test_cancellation_notified_once_with_alternative_and_cause(h: Harness) -> No
     assert len(sent) == 1
     n = sent[0]
     assert n.title == "🚆 Matin Thionville→Luxembourg"
-    assert "07:28 (TER 88501) SUPPRIMÉ." in n.message
-    assert "Alternative : 07:36 (88804) annoncé +5 → arr. ~08:11." in n.message
+    assert "TER 88501 (départ 07:28) SUPPRIMÉ." in n.message
+    assert "Alternative : TER 88804 (départ 07:36) annoncé +5 → arr. ~08:11." in n.message
     assert "Cause : Panne de signalisation" in n.message
     assert n.priority == 4 and "x" in n.tags and "train" in n.tags
     # mêmes données au cycle suivant : rien
@@ -119,8 +119,8 @@ def test_skipped_and_bus(h: Harness) -> None:
     sent = h.cycle(at("06:40"), trips)
     assert len(sent) == 1
     msg = sent[0].message
-    assert "07:18 (TER 88712) SUPPRIMÉ au départ de Thionville." in msg
-    assert "07:28 (TER 88501) REMPLACÉ PAR UN CAR" in msg
+    assert "TER 88712 (départ 07:18) SUPPRIMÉ au départ de Thionville." in msg
+    assert "TER 88501 (départ 07:28) REMPLACÉ PAR UN CAR" in msg
     assert {"x", "bus"} <= set(sent[0].tags)
 
 
@@ -136,18 +136,19 @@ def test_line_summary_when_three_trains(h: Harness) -> None:
     n = sent[0]
     assert n.title == "⚠️ Matin Thionville→Luxembourg : perturbations (3 trains)"
     assert n.message.splitlines()[:3] == [
-        "• 07:18 88712 supprimé",
-        "• 07:28 88501 supprimé",
-        "• 07:36 88804 +25 min",
+        "• 88712 (07:18) supprimé",
+        "• 88501 (07:28) supprimé",
+        "• 88804 (07:36) +25 min",
     ]
-    assert "Meilleure option : 07:48 (88714) annoncé +2 → arr. ~08:17." in n.message
+    assert "Meilleure option : TER 88714 (départ 07:48) annoncé +2 → arr. ~08:17." in n.message
     assert "warning" in n.tags and n.priority == 4
 
 
 def test_new_alert_text_on_monitored_train(h: Harness) -> None:
     alerts = [("a1", ["88804"], "Forte affluence attendue.", None, None)]
     sent = h.cycle(at("06:40"), NORMAL, alerts)
-    assert len(sent) == 1 and "07:36 (TER 88804) info : Forte affluence attendue." in sent[0].message
+    assert len(sent) == 1 and sent[0].priority == 2
+    assert "TER 88804 (départ 07:36) — info SNCF : Forte affluence attendue." in sent[0].message
     assert h.cycle(at("06:42"), NORMAL, alerts) == []
     alerts2 = [*alerts, ("a2", ["88804"], "Arrêt supplémentaire à Hettange-Grande.", None, None)]
     sent = h.cycle(at("06:44"), NORMAL, alerts2)
@@ -160,7 +161,7 @@ def test_new_alert_text_on_monitored_train(h: Harness) -> None:
 def test_added_train(h: Harness) -> None:
     trips = [*NORMAL, T("99001", [S(THI, "07:40"), S(LUX, "08:05")], added=True)]
     sent = h.cycle(at("06:40"), trips)
-    assert len(sent) == 1 and "Train ajouté : 07:40 (99001)" in sent[0].message
+    assert len(sent) == 1 and "Train ajouté : 99001 (départ 07:40)" in sent[0].message
     assert h.cycle(at("06:42"), trips) == []
 
 
@@ -189,8 +190,8 @@ def test_removed_from_plan_vs_baseline(cfg: Config, store: Store) -> None:
     h = Harness(cfg, store)
     sent = h.cycle(at("05:30", tue), None)  # ouverture de fenêtre, flux encore indisponible
     assert len(sent) == 1
-    assert "07:36 (TER 88804) absent du plan de transport du jour" in sent[0].message
-    assert "Alternative : 07:48 (88714) → arr. 08:15 (théorique)." in sent[0].message
+    assert "TER 88804 (départ 07:36) absent du plan de transport du jour" in sent[0].message
+    assert "Alternative : TER 88714 (départ 07:48) → arr. 08:15 (théorique)." in sent[0].message
     assert h.cycle(at("05:32", tue), None) == []
     # le train apparaît finalement dans le temps réel
     sent = h.cycle(at("06:30", tue), [T("88804", [S(THI, "07:36"), S(LUX, "08:06")], day=tue)])
@@ -293,5 +294,6 @@ def test_same_alert_on_many_trains_grouped(h: Harness) -> None:
     sent = h.cycle(at("06:40"), NORMAL, alerts)
     assert len(sent) == 1
     assert sent[0].message == (
-        "Info 07:18 (88712), 07:28 (88501), 07:36 (88804) : Travaux : temps de parcours allongé de 5 min."
+        "Info SNCF pour 88712 (07:18), 88501 (07:28), 88804 (07:36) : "
+        "Travaux : temps de parcours allongé de 5 min."
     )

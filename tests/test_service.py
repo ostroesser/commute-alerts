@@ -112,8 +112,8 @@ def test_evening_digest(cfg: Config, store: Store) -> None:
         click=None,
     )
     assert n is not None and n.title == "🚆 Demain 27/10 : perturbations prévues" and n.priority == 3
-    assert "• 07:36 (88804) absent du plan (supprimé à l'avance)" in n.message
-    assert "• 07:48 (88714) : Grève : circulation perturbée." in n.message
+    assert "• TER 88804 (départ 07:36) absent du plan (supprimé à l'avance)" in n.message
+    assert "• TER 88714 (départ 07:48) : Grève : circulation perturbée." in n.message
     assert (
         evening_digest(tue, [(cfg.windows[0], ("A", "B"), plan, [], [])], send_all_clear=False, click=None)
         is None
@@ -155,7 +155,7 @@ def test_ntfy_payload_and_auth() -> None:
     )
     notifier = NtfyNotifier(cfg, client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
     ok = asyncio.run(
-        notifier.send(Notification("🚆 Matin", "07:28 (TER 88501) SUPPRIMÉ.", 4, ["train", "x"]))
+        notifier.send(Notification("🚆 Matin", "TER 88501 (départ 07:28) SUPPRIMÉ.", 4, ["train", "x"]))
     )
     assert ok
     req = seen[0]
@@ -165,7 +165,7 @@ def test_ntfy_payload_and_auth() -> None:
     assert body == {
         "topic": "test-topic",
         "title": "🚆 Matin",
-        "message": "07:28 (TER 88501) SUPPRIMÉ.",
+        "message": "TER 88501 (départ 07:28) SUPPRIMÉ.",
         "priority": 4,
         "tags": ["train", "x"],
         "click": "https://example.org/d",
@@ -202,7 +202,7 @@ def test_replay_real_morning_capture(tmp_path: Path, gtfs_zip: Path) -> None:
     assert len(notifier.sent) == 1
     n = notifier.sent[0]
     assert n.title == "🚆 Retour Luxembourg→Thionville"
-    assert n.message.startswith("08:39 (TER 88721) SUPPRIMÉ.")
+    assert n.message.startswith("TER 88721 (départ 08:39) SUPPRIMÉ.")
     assert "Alternative SNCF : 09:39 (88520)." in n.message
     assert (
         "Cause : Une opération de maintenance imprévue sur le train empêche sa mise en circulation."
@@ -222,3 +222,13 @@ def test_health_after_restart(cfg: Config, store: Store) -> None:
     assert ok and body["status"] == "ok"
     ok, _ = evaluate(svc.health, at("07:00"))
     assert not ok  # boucle figée depuis plus de 12 min
+
+
+def test_gtfs_checked_once_per_refresh_slot(cfg: Config, store: Store) -> None:
+    svc, _ = make_service(cfg, store, FakeFeeds())
+    store.set_meta("gtfs_checked_at", at("09:00").isoformat())
+    assert not svc.gtfs_due(at("17:39"))
+    assert svc.gtfs_due(at("17:40"))
+    store.set_meta("gtfs_checked_at", at("17:40").isoformat())  # 304 « inchangé » à 17:40
+    assert not svc.gtfs_due(at("17:42"))
+    assert not svc.gtfs_due(at("18:30"))
