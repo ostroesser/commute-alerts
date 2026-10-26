@@ -1,0 +1,25 @@
+stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station
+StopArea:OCE87191007,Thionville,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-87191007,Thionville,,49.0,6.0,,,0,StopArea:OCE87191007
+StopPoint:OCECar TER-87191007,Thionville,,49.0,6.0,,,0,StopArea:OCE87191007
+StopPoint:OCETGV INOUI-87191007,Thionville,,49.0,6.0,,,0,StopArea:OCE87191007
+StopArea:OCE87191163,Hettange-Grande,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-87191163,Hettange-Grande,,49.0,6.0,,,0,StopArea:OCE87191163
+StopPoint:OCECar TER-87191163,Hettange-Grande,,49.0,6.0,,,0,StopArea:OCE87191163
+StopPoint:OCETGV INOUI-87191163,Hettange-Grande,,49.0,6.0,,,0,StopArea:OCE87191163
+StopArea:OCE82006030,Bettembourg,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-82006030,Bettembourg,,49.0,6.0,,,0,StopArea:OCE82006030
+StopPoint:OCECar TER-82006030,Bettembourg,,49.0,6.0,,,0,StopArea:OCE82006030
+StopPoint:OCETGV INOUI-82006030,Bettembourg,,49.0,6.0,,,0,StopArea:OCE82006030
+StopArea:OCE82002501,Howald,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-82002501,Howald,,49.0,6.0,,,0,StopArea:OCE82002501
+StopPoint:OCECar TER-82002501,Howald,,49.0,6.0,,,0,StopArea:OCE82002501
+StopPoint:OCETGV INOUI-82002501,Howald,,49.0,6.0,,,0,StopArea:OCE82002501
+StopArea:OCE82001000,Luxembourg,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-82001000,Luxembourg,,49.0,6.0,,,0,StopArea:OCE82001000
+StopPoint:OCECar TER-82001000,Luxembourg,,49.0,6.0,,,0,StopArea:OCE82001000
+StopPoint:OCETGV INOUI-82001000,Luxembourg,,49.0,6.0,,,0,StopArea:OCE82001000
+StopArea:OCE87192039,Metz,,49.0,6.0,,,1,
+StopPoint:OCETrain TER-87192039,Metz,,49.0,6.0,,,0,StopArea:OCE87192039
+StopPoint:OCECar TER-87192039,Metz,,49.0,6.0,,,0,StopArea:OCE87192039
+StopPoint:OCETGV INOUI-87192039,Metz,,49.0,6.0,,,0,StopArea:OCE87192039

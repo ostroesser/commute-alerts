@@ -1,0 +1,36 @@
+services:
+  commute-alerts:
+    build:
+      context: .
+    image: commute-alerts:local
+    container_name: commute-alerts
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      TZ: Europe/Paris
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+      - commute-data:/data
+    mem_limit: 300m
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-m", "commute_alerts.health", "--check"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+volumes:
+  commute-data:

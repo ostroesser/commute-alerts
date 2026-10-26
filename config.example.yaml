@@ -1,0 +1,64 @@
+# Copier en config.yaml (ignoré par git). Les ${VAR} sont lues dans l'environnement (.env).
+timezone: Europe/Paris
+data_dir: /data
+
+# Codes gare à 8 chiffres (UIC/OCE), tels qu'ils apparaissent dans les stop_id SNCF
+# (StopArea:OCE87191007, StopPoint:OCETrain TER-87191007…).
+stations:
+  thionville: "87191007"
+  hettange_grande: "87191163"
+  bettembourg: "82006030"
+  howald: "82002501"
+  luxembourg: "82001000"
+
+windows:
+  - name: "Matin"
+    origin: thionville
+    destination: luxembourg
+    start: "06:30"          # départ de l'origine entre start et end
+    end: "08:30"
+    days: [mon, tue, wed, thu, fri]
+  - name: "Soir"
+    origin: luxembourg
+    destination: thionville
+    start: "16:30"
+    end: "19:30"
+    days: [mon, tue, wed, thu, fri]
+
+filters:
+  include_tgv: false
+  include_bus_replacement: true   # cars : notifiés et marqués « car »
+
+thresholds_min: [5, 10, 20, 30]   # paliers de retard (minutes)
+recovery_margin_min: 2            # « retour à l'heure » sous (1er palier − marge) : évite le yo-yo
+skip_holidays: [FR, LU]           # « FR-57 » pour inclure les fériés d'Alsace-Moselle
+pause_until: null                 # ex. 2026-12-31 pendant les congés
+
+polling:
+  realtime_interval_s: 90         # jamais < 30 s (politesse envers le proxy)
+  pre_window_min: 75
+  post_window_min: 30
+  stale_after_s: 360
+  max_backoff_s: 300
+  error_threshold: 3
+
+feeds:
+  trip_updates: https://proxy.transport.data.gouv.fr/resource/sncf-gtfs-rt-trip-updates
+  service_alerts: https://proxy.transport.data.gouv.fr/resource/sncf-gtfs-rt-service-alerts
+  static_gtfs: https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip
+  static_refresh_times: ["03:30", "17:40"]   # 17:40 : récupère les adaptations publiées la veille à 17 h
+
+ntfy:
+  url: ${NTFY_URL}          # ex. https://ntfy.example.org
+  topic: ${NTFY_TOPIC}      # placeholder : le vrai topic va dans .env
+  token: ${NTFY_TOKEN}      # optionnel
+  click_url: null           # ex. page « prochains départs » de la gare d'origine
+
+evening_digest: "18:00"     # résumé de la veille (null pour désactiver)
+send_all_clear: false
+alternatives_horizon_min: 120
+health_port: 8080
+
+mobiliteit:                 # phase 2, non implémenté
+  enabled: false
+  api_key: ${MOBILITEIT_API_KEY}

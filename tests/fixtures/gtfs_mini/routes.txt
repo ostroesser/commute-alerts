@@ -1,0 +1,5 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+R_C50,1187,C50,Metz - Luxembourg,,2,,,
+R_C40,1187,C40+,Nancy - Luxembourg,,2,,,
+R_TGV,1187,TGV,Paris - Luxembourg,,2,,,
+R_CAR,1187,CAR,Thionville - Luxembourg,,3,,,
