@@ -78,6 +78,7 @@ class Service:
         self.codes = set(cfg.stations.values())
         self.last_alerts: AlertSnapshot | None = None
         self._names: dict[str, str] = {}
+        self.health.gtfs_imported_at = store.get_meta("gtfs_imported_at") or ""
 
     # --- helpers -------------------------------------------------------------
     def now(self) -> datetime:

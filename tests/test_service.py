@@ -210,3 +210,15 @@ def test_replay_real_morning_capture(tmp_path: Path, gtfs_zip: Path) -> None:
     )
     states = svc.store.load_states(MONDAY, "Matin")
     assert states["88716"].status.value == "SCHEDULED"  # déjà parti à 08:29 : figé
+
+
+def test_health_after_restart(cfg: Config, store: Store) -> None:
+    from commute_alerts.health import evaluate
+
+    svc, _ = make_service(cfg, store, FakeFeeds())
+    assert svc.health.gtfs_imported_at  # GTFS déjà importé (redémarrage sans réimport)
+    svc.health.last_loop_at = at("06:40").isoformat()
+    ok, body = evaluate(svc.health, at("06:45"))
+    assert ok and body["status"] == "ok"
+    ok, _ = evaluate(svc.health, at("07:00"))
+    assert not ok  # boucle figée depuis plus de 12 min
