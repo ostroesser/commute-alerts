@@ -45,7 +45,8 @@ def serve(state: HealthState, port: int) -> ThreadingHTTPServer:
         def log_message(self, format: str, *args: Any) -> None:  # silence
             pass
 
-    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    # 0.0.0.0 : requis dans le conteneur ; le port n'est pas publié par compose.
+    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)  # noqa: S104
     threading.Thread(target=server.serve_forever, name="healthz", daemon=True).start()
     return server
 

@@ -113,7 +113,7 @@ class Store:
     ) -> None:
         with self.tx() as c:
             for t in ("gtfs_stops", "gtfs_trips", "gtfs_stop_times", "gtfs_service_dates"):
-                c.execute(f"DELETE FROM {t}")
+                c.execute(f"DELETE FROM {t}")  # noqa: S608 (noms de tables constants)
             c.executemany("INSERT INTO gtfs_stops VALUES(?, ?)", stops)
             c.executemany("INSERT INTO gtfs_trips VALUES(?, ?, ?, ?, ?)", trips)
             c.executemany("INSERT OR REPLACE INTO gtfs_stop_times VALUES(?, ?, ?, ?, ?, ?)", stop_times)
@@ -174,7 +174,7 @@ class Store:
         """Plus ancien (ou plus récent) snapshot pris avant `captured_before` (None si aucun)."""
         agg = "MAX" if latest else "MIN"
         row = self.conn.execute(
-            f"SELECT {agg}(captured_on) FROM plan_snapshots"
+            f"SELECT {agg}(captured_on) FROM plan_snapshots"  # noqa: S608 (MIN/MAX constant)
             " WHERE service_date=? AND window=? AND captured_on<?",
             (service_date.isoformat(), window, captured_before.isoformat()),
         ).fetchone()
@@ -281,7 +281,7 @@ class Store:
 
     def stats(self) -> dict[str, Any]:
         return {
-            t: self.conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+            t: self.conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]  # noqa: S608 (tables constantes)
             for t in ("gtfs_trips", "gtfs_stop_times", "train_state", "plan_snapshots")
         }
 

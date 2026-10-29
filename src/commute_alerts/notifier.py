@@ -67,7 +67,8 @@ class NtfyNotifier:
         self.retries = retries
 
     async def send(self, n: Notification) -> bool:
-        assert self.cfg.url and self.cfg.topic
+        if not (self.cfg.url and self.cfg.topic):  # pas d'assert : supprimé sous python -O
+            raise ValueError("ntfy non configuré (NTFY_URL / NTFY_TOPIC)")
         headers = {"Content-Type": "application/json"}
         if self.cfg.token:
             headers["Authorization"] = f"Bearer {self.cfg.token}"

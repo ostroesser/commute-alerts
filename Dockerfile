@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 # Image multi-arch (linux/arm64 pour Raspberry Pi 4, linux/amd64).
-FROM ghcr.io/astral-sh/uv:0.13 AS uv
+# Images de base épinglées par digest : Dependabot ouvre une PR à chaque correctif publié.
+FROM ghcr.io/astral-sh/uv:0.13@sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0 AS uv
 
-FROM python:3.12-slim AS build
+FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS build
 COPY --from=uv /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never UV_PYTHON=/usr/local/bin/python3.12 \
     UV_CONCURRENT_DOWNLOADS=2 UV_HTTP_TIMEOUT=120
@@ -12,7 +13,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY src ./src
 RUN uv sync --frozen --no-dev --no-editable
 
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
 RUN useradd --system --uid 10001 --home-dir /app --shell /usr/sbin/nologin app \
     && mkdir -p /data /config && chown app:app /data
 COPY --from=build /app/.venv /app/.venv

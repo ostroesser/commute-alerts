@@ -34,7 +34,7 @@ PUBLIC_HOSTS = {"ntfy.sh", "ntfy.example.org", "example.org", "localhost", "127.
 def _git_files(staged: bool) -> list[Path] | None:
     cmd = ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"] if staged else ["git", "ls-files"]
     try:
-        out = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, check=True).stdout
+        out = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, check=True).stdout  # noqa: S603
     except (OSError, subprocess.CalledProcessError):
         return None
     return [ROOT / line for line in out.splitlines() if line]

@@ -85,7 +85,7 @@ class RtAlert:
 
     @property
     def digest(self) -> str:
-        return hashlib.sha1(f"{self.header}\n{self.text}".encode()).hexdigest()[:12]
+        return hashlib.sha1(f"{self.header}\n{self.text}".encode(), usedforsecurity=False).hexdigest()[:12]
 
     @property
     def key(self) -> str:
@@ -308,4 +308,4 @@ async def fetch(client: httpx.AsyncClient, url: str) -> bytes:
 
 def alerts_hash(alerts: Iterable[RtAlert]) -> str:
     keys = sorted(a.key for a in alerts)
-    return hashlib.sha1("|".join(keys).encode()).hexdigest()[:12] if keys else ""
+    return hashlib.sha1("|".join(keys).encode(), usedforsecurity=False).hexdigest()[:12] if keys else ""

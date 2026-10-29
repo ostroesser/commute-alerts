@@ -285,7 +285,7 @@ def explore_siri(save_dir: Path, axis: set[str]) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--save-dir", type=Path, default=Path("/tmp/commute-explore"))
+    ap.add_argument("--save-dir", type=Path, default=Path("/tmp/commute-explore"))  # noqa: S108 (outil local)
     ap.add_argument("--from-dir", type=Path, help="relire trip_updates_*.pb / service_alerts_*.pb")
     ap.add_argument("--siri", action="store_true")
     args = ap.parse_args()

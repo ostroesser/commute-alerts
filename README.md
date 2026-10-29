@@ -173,6 +173,36 @@ uv run python -m commute_alerts --config config.yaml --replay /tmp/soir --gtfs d
 - un jeton `tk_…` ;
 - une valeur sensible du `.env` local (topic, token, hôte privé).
 
+### Vulnérabilités : détection et correction automatiques
+
+| Couche | Outil |
+|---|---|
+| Dépendances Python (`uv.lock`) | Dependabot (alertes + PR de sécurité immédiates, mises à jour hebdomadaires) ; `pip-audit` en CI |
+| Images de base (`python:3.12-slim`, `uv`) | épinglées par digest, Dependabot ouvre une PR à chaque nouveau digest ; scan Trivy de l'image en CI |
+| GitHub Actions | épinglées par SHA, mises à jour par Dependabot |
+| Code | règles bandit de ruff (`S`), CodeQL (configuration par défaut de GitHub) |
+
+La CI tourne aussi chaque lundi, pour détecter les CVE publiées depuis le dernier commit. Les PR Dependabot non majeures sont fusionnées automatiquement quand `test`, `audit` et `docker` passent ; les montées de version majeures attendent une relecture.
+
+Déploiement continu sur l'hôte : `tools/auto_update.sh`, lancé chaque jour par un timer systemd, avance sur `origin/main`, reconstruit l'image et redéploie. Si le conteneur n'est pas `healthy` dans les 5 minutes, il restaure l'image précédente et notifie (topic ntfy lu dans le fichier `ALERT_TOPIC_FILE`).
+
+```ini
+# /etc/systemd/system/commute-alerts-update.service
+[Service]
+Type=oneshot
+User=<utilisateur du groupe docker>
+Environment=ALERT_TOPIC_FILE=/chemin/vers/topic.txt
+ExecStart=/chemin/vers/sncf-notif/tools/auto_update.sh
+
+# /etc/systemd/system/commute-alerts-update.timer
+[Timer]
+OnCalendar=*-*-* 11:00
+RandomizedDelaySec=30m
+Persistent=true
+[Install]
+WantedBy=timers.target
+```
+
 ## Dépannage
 
 | Symptôme | Piste |

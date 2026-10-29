@@ -1,0 +1,27 @@
+# Mises à jour automatiques ; les PR non majeures sont fusionnées par dependabot-automerge.yml
+# une fois la CI verte. Les alertes de sécurité ouvrent leurs propres PR sans attendre le planning.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: python  # requires-python <3.13 : digest et correctifs 3.12 uniquement
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        update-types: [minor, patch]
