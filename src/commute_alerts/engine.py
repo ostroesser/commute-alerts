@@ -296,7 +296,7 @@ def build_notification(
     impacted = [no for no, evs in by_train.items() if any(e.kind in IMPACT for e in evs)]
     prio = max(priority(e) for e in events)
     tags = ["train", *sorted({_TAGS[e.kind] for e in events})]
-    head = f"{window.name} {origin_name}→{dest_name}"
+    head = f"{window.name}"
 
     lines: list[str] = []
     if len(impacted) >= LINE_THRESHOLD:
