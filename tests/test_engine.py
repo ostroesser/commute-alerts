@@ -8,7 +8,7 @@ import pytest
 from conftest import LUX, MONDAY, THI, TZ, S, T, at, make_config, sa_feed, tu_feed
 
 from commute_alerts.config import Config
-from commute_alerts.engine import best_alternative, bold, bucket, pick_cause, transition
+from commute_alerts.engine import best_alternative, bucket, pick_cause, transition
 from commute_alerts.ids import Mode
 from commute_alerts.matcher import Observation
 from commute_alerts.models import PlannedTrain, Status, TrainState
@@ -71,7 +71,7 @@ def test_cancellation_notified_once_with_alternative_and_cause(h: Harness) -> No
     sent = h.cycle(at("06:50"), trips, alerts)
     assert len(sent) == 1
     n = sent[0]
-    assert n.title == "🚆 " + bold("Matin 07:28 - Supprimé · 07:36 - Retard +5 min")
+    assert n.title == "🚆 Matin 07:28 - Supprimé\n🚆 Matin 07:36 - Retard +5 min"
     assert "TER 88501 (départ 07:28) SUPPRIMÉ." in n.message
     assert "Alternative : TER 88804 (départ 07:36) annoncé +5 → arr. ~08:11." in n.message
     assert "Cause : Panne de signalisation" in n.message

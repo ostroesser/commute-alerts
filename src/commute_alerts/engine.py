@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta
@@ -97,21 +96,6 @@ def bucket(delay_min: int, thresholds: list[int]) -> int:
 
 def hhmm(dt: datetime) -> str:
     return dt.strftime("%H:%M")
-
-
-def bold(text: str) -> str:
-    """Gras Unicode (les titres ntfy sont en texte brut : pas de Markdown possible)."""
-    out = []
-    for ch in unicodedata.normalize("NFD", text):
-        if "A" <= ch <= "Z":
-            out.append(chr(0x1D5D4 + ord(ch) - ord("A")))
-        elif "a" <= ch <= "z":
-            out.append(chr(0x1D5EE + ord(ch) - ord("a")))
-        elif "0" <= ch <= "9":
-            out.append(chr(0x1D7EC + ord(ch) - ord("0")))
-        else:
-            out.append(ch)  # accents (combinants), ponctuation, espaces
-    return "".join(out)
 
 
 def _title_status(ev: Event) -> str:
@@ -354,11 +338,11 @@ def build_notification(
         if "warning" not in tags:
             tags.append("warning")
     else:
-        parts = [
-            f"{hhmm(_main_event(evs).state.planned_dep)} - {_title_status(_main_event(evs))}"
+        # Une ligne par train dans le titre : « 🚆 Matin 07:28 - Supprimé »
+        title = "\n".join(
+            f"🚆 {window.name} {hhmm(_main_event(evs).state.planned_dep)} - {_title_status(_main_event(evs))}"
             for evs in sorted(by_train.values(), key=lambda e: e[0].state.planned_dep)
-        ]
-        title = "🚆 " + bold(f"{window.name} {' · '.join(parts)}")
+        )
         # Une même alerte « info » sur plusieurs trains (travaux, affluence…) : une seule ligne
         info_groups: dict[str, list[TrainState]] = {}
         ordered = sorted(by_train.values(), key=lambda e: e[0].state.planned_dep)

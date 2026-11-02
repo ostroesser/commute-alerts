@@ -11,7 +11,7 @@ from conftest import FIXTURES, MONDAY, THI, TZ, S, T, at, make_config, sa_feed, 
 
 from commute_alerts.__main__ import replay
 from commute_alerts.config import Config, Ntfy
-from commute_alerts.engine import bold, evening_digest
+from commute_alerts.engine import evening_digest
 from commute_alerts.models import PlannedTrain
 from commute_alerts.notifier import DryRunNotifier, Notification, NtfyNotifier
 from commute_alerts.realtime import decode_alerts
@@ -201,7 +201,7 @@ def test_replay_real_morning_capture(tmp_path: Path, gtfs_zip: Path) -> None:
     svc = asyncio.run(replay(cfg, FIXTURES / "rt_20261026_morning", gtfs_zip, notifier))
     assert len(notifier.sent) == 1
     n = notifier.sent[0]
-    assert n.title == "🚆 " + bold("Retour 08:39 - Supprimé")
+    assert n.title == "🚆 Retour 08:39 - Supprimé"
     assert n.message.startswith("TER 88721 (départ 08:39) SUPPRIMÉ.")
     assert "Alternative SNCF : 09:39 (88520)." in n.message
     assert (
