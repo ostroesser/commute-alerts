@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Image multi-arch (linux/arm64 pour Raspberry Pi 4, linux/amd64).
 # Images de base épinglées par digest : Dependabot ouvre une PR à chaque correctif publié.
-FROM ghcr.io/astral-sh/uv:0.13@sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0 AS uv
+FROM ghcr.io/astral-sh/uv:0.13@sha256:96f40d3904aad8d0bd010539001d36c8e2188b981e1334471a90c4a1d93bb490 AS uv
 
 FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS build
 COPY --from=uv /uv /usr/local/bin/uv
